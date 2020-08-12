@@ -10,6 +10,10 @@ make_bet_table <- function() {
         kelly * 40 < 1.40 ~ 0,
         kelly > 0 & edge > 0 ~ kelly * 40, 
         TRUE ~ 0
+      ), 
+      across(
+        c(odds_dec, kelly, edge, bet), 
+        ~ round(.x, 2)
       )
     )
   

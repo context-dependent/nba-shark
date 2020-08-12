@@ -8,7 +8,9 @@ scrape_pinnacle <- function() {
   req <- httr::GET(url)
   raw <- httr::content(req)
   
-  nodes <- raw %>% html_node(".dateGroup:nth-child(2)") %>% html_nodes(".eventLine.status-scheduled")
+  all_nodes <- raw %>% html_nodes(".dateGroup") %>% map(~.x %>% html_nodes(".eventLine.status-scheduled"))
+  dates <- all_nodes %>% map_chr(~ .x[1] %>% html_attr("rel") %>% str_sub(1, 10)) %>% as.Date() 
+  nodes <- all_nodes[dates == Sys.Date()][[1]]
   
   dat <- 
     tibble(
@@ -29,6 +31,7 @@ scrape_pinnacle <- function() {
       team = case_when(
         team %>% str_detect("Clippers") ~ "LAC", 
         team %>% str_detect("Oklahoma") ~ "OKC",
+        team %>% str_detect("Orleans") ~ "NOP", 
         TRUE ~ str_sub(team, 1, 3) %>% str_to_upper()
       )
     ) %>% 
